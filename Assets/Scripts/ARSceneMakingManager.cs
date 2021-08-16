@@ -284,6 +284,7 @@ public class ARSceneMakingManager : MonoBehaviour
                         }
                         break;
                     case "DeleteButtonCube":
+                        CleaningNameObject();
                         LastFindButton = FindButton;
                         FindButton = GameObject.Find(ObjName);
                         if ((LastFindButton != FindButton) && (LastFindButton.GetComponent<Renderer>().material.color == Color.grey))
@@ -303,6 +304,7 @@ public class ARSceneMakingManager : MonoBehaviour
                         }
                         break;
                     case "PillarButtonCube":
+                        CleaningNameObject();
                         LastFindButton = FindButton;
                         FindButton = GameObject.Find(ObjName);
                         checkDeleteObj = false;
@@ -328,6 +330,7 @@ public class ARSceneMakingManager : MonoBehaviour
                         }
                         break;
                     case "RedFlagButtonCube":
+                        CleaningNameObject();
                         LastFindButton = FindButton;
                         FindButton = GameObject.Find(ObjName);
                         checkDeleteObj = false;
@@ -380,6 +383,7 @@ public class ARSceneMakingManager : MonoBehaviour
                         }
                         break;
                     case "RadarogramButtonCube":
+                        CleaningNameObject();
                         LastFindButton = FindButton;
                         FindButton = GameObject.Find(ObjName);
                         checkDeleteObj = false;
@@ -405,6 +409,7 @@ public class ARSceneMakingManager : MonoBehaviour
                         }
                         break;
                     case "TreeButtonCube":
+                        CleaningNameObject();
                         LastFindButton = FindButton;
                         FindButton = GameObject.Find(ObjName);
                         checkDeleteObj = false;
@@ -430,6 +435,7 @@ public class ARSceneMakingManager : MonoBehaviour
                         }
                         break;
                     case "HatchwayButtonCube":
+                        CleaningNameObject();
                         LastFindButton = FindButton;
                         FindButton = GameObject.Find(ObjName);
                         checkDeleteObj = false;
@@ -577,7 +583,7 @@ public class ARSceneMakingManager : MonoBehaviour
                 }
             }
 
-            if (InstObj.name == "Flag_white(Clone)") // если свежесозданный объект - граница радарограммы
+            if (InstObj.name == "Flag_white(Clone)") // если свежесозданный объект - граница профиля
             {
                 Flag_white_num++;
                 InstObj.name = ("BoundaryRadarogram" + Flag_white_num); // переименовываем его с добавлением порядкового номера
@@ -680,8 +686,18 @@ public class ARSceneMakingManager : MonoBehaviour
             newRLine.GetComponent<SpriteRenderer>().size = new Vector2(MyMagnitude ,0.31f);
             newRLine.transform.Rotate(90,newRLine.transform.rotation.y + 90,0);
             //newWLine.transform.localScale = new Vector3(0.01f, 1f, 0.1f * MyMagnitude);
-            GameObject.Find("BoundaryFindObj1").name = "BoundaryFindObj";
-            GameObject.Find("BoundaryFindObj2").name = "BoundaryFindObj";
+
+            if (LineColor == 1) // красная линия
+            {
+                GameObject.Find("BoundaryFindObj1").name = "BoundaryFindObj";
+                GameObject.Find("BoundaryFindObj2").name = "BoundaryFindObj";
+            }
+            else if (LineColor == 2) // зеленая линия
+            {
+                GameObject.Find("BoundaryFindObj1").name = "BoundaryFindObj";
+                GameObject.Find("BoundaryFindObj2").name = "BoundaryFindObj1"; // 2 переименовываем в 1 чтобы зеленая линия соединяла все флаги в группе
+                Flag_white_num++; // повысил счетчик, чтобы показать что первый флаг уже создан и новый флаг был сразу вторым
+            }
         }
 
         // Измерение расстояния между двумя объектами
@@ -696,8 +712,24 @@ public class ARSceneMakingManager : MonoBehaviour
         // }
 
     }
+
+    // эта функция подчищает названия объектов, обнуляет счетчики и тд, при завершении установки групп объектов
+    void CleaningNameObject()
+    {
+        // для зелёной линии
+        Flag_white_num = 0;
+        if (GameObject.Find("BoundaryFindObj1"))
+        {
+            GameObject.Find("BoundaryFindObj1").name = "BoundaryFindObj";
+        }
+        if (GameObject.Find("BoundaryFindObj2"))
+        {
+            GameObject.Find("BoundaryFindObj2").name = "BoundaryFindObj";
+        }
+    }
     void DeleteObject()
     {
+        // Если нажали кнопку "удалить последний созданный объект"
         if (Input.GetKeyDown(KeyCode.JoystickButton3))
         {
             Destroy(InstObj);
@@ -723,7 +755,7 @@ public class ARSceneMakingManager : MonoBehaviour
         }
     }
 
-    // создаю линию между двумя кубами
+    // создаю линию между двумя флагами
     public void LineDrawingButton(string obj1, string obj2)
     { 
         lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
