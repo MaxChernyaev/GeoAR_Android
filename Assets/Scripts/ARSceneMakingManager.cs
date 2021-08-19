@@ -69,7 +69,9 @@ public class ARSceneMakingManager : MonoBehaviour
     private RaycastHit hit;
     private int LineColor; // цвет линии между красными флагами: 1-красная, 2-зеленая
     [SerializeField] private GameObject StripedLine;
-    private GameObject InstObj;
+    private GameObject InstObj; // последний установленный объект
+    private GameObject newWLine; // последняя созданная белая линия
+    private GameObject newRLine; // последняя созданная красная линия
 
     void Start()
     {   
@@ -586,15 +588,20 @@ public class ARSceneMakingManager : MonoBehaviour
             if (InstObj.name == "Flag_white(Clone)") // если свежесозданный объект - граница профиля
             {
                 Flag_white_num++;
+                InstObj.tag = "Important_flag"; // Чтобы этот объект нельзя было удалить рандомно через кнопку удалить
                 InstObj.name = ("BoundaryRadarogram" + Flag_white_num); // переименовываем его с добавлением порядкового номера
                 if ((Flag_white_num % 2) == 0) // сбрасываем счетчик, если втрой флаг был установлен
                 {
                     Flag_white_num = 0;
                 }
             }
-            if (InstObj.name == "Flag_red(Clone)") // если свежесозданный объект - граница искомого объекта
+            if (InstObj.name == "Flag_red(Clone)") // если свежесозданный объект - граница искомого объекта (красная или зелёная линия)
             {
                 Flag_white_num++;
+                if (LineColor == 1) // красная линия
+                {
+                    InstObj.tag = "Important_flag"; // Чтобы этот объект нельзя было удалить рандомно через кнопку удалить, а можно было только через нижнюю кнопку на пульте
+                }
                 InstObj.name = ("BoundaryFindObj" + Flag_white_num); // переименовываем его с добавлением порядкового номера
                 if ((Flag_white_num % 2) == 0) // сбрасываем счетчик, если втрой флаг был установлен
                 {
@@ -649,7 +656,8 @@ public class ARSceneMakingManager : MonoBehaviour
                 Vector3 MyCenter = Vector3.Lerp(FirstPosition,SecondPosition,0.5f);
 
                 //GameObject RG = Instantiate(radarogram, MyCenter, Quaternion.identity, FindPlane.transform);
-                GameObject newWLine = Instantiate(whiteLine, MyCenter, Quaternion.identity, FindPlane.transform);
+                newWLine = Instantiate(whiteLine, MyCenter, Quaternion.identity, FindPlane.transform);
+                newWLine.tag = "Important_flag"; // Чтобы этот объект нельзя было удалить рандомно через кнопку удалить
                 newWLine.transform.LookAt(SecondPosition);
                 newWLine.transform.localScale = new Vector3(0.01f, 1f, 0.1f * MyMagnitude);
                 
@@ -660,8 +668,8 @@ public class ARSceneMakingManager : MonoBehaviour
                 //RG.transform.Rotate(0,-90,0);
                 //RG.SetActive(false);
                 // LineDrawingButton("Boundary1","Boundary2");
-                GameObject.Find("BoundaryRadarogram1").name = "BoundaryRadarogram";
-                GameObject.Find("BoundaryRadarogram2").name = "BoundaryRadarogram";
+                GameObject.Find("BoundaryRadarogram1").name = "BoundaryRadarogram_1_" + numObjectBoundaryRadarogramFlag.ToString(); // таким образом, после полного создания профиля, флаги будут хранится как
+                GameObject.Find("BoundaryRadarogram2").name = "BoundaryRadarogram_2_" + numObjectBoundaryRadarogramFlag.ToString(); // BoundaryRadarogram_1/2(начало/конец)_номерпрофиля
             }
         }
         // если найдены 2 границы из красных флагов
@@ -681,7 +689,7 @@ public class ARSceneMakingManager : MonoBehaviour
             {
                 StripedLine = greenLine;
             }
-            GameObject newRLine = Instantiate(StripedLine, MyCenter, Quaternion.identity, FindPlane.transform);
+            newRLine = Instantiate(StripedLine, MyCenter, Quaternion.identity, FindPlane.transform);
             newRLine.transform.LookAt(SecondPosition);
             newRLine.GetComponent<SpriteRenderer>().size = new Vector2(MyMagnitude ,0.31f);
             newRLine.transform.Rotate(90,newRLine.transform.rotation.y + 90,0);
@@ -689,8 +697,9 @@ public class ARSceneMakingManager : MonoBehaviour
 
             if (LineColor == 1) // красная линия
             {
-                GameObject.Find("BoundaryFindObj1").name = "BoundaryFindObj";
-                GameObject.Find("BoundaryFindObj2").name = "BoundaryFindObj";
+                newRLine.tag = "Important_flag"; // Чтобы этот объект нельзя было удалить рандомно через кнопку удалить;
+                GameObject.Find("BoundaryFindObj1").name = "BoundaryFindObj_1_" + numObjectBoundaryRedFlag.ToString();
+                GameObject.Find("BoundaryFindObj2").name = "BoundaryFindObj_2_" + numObjectBoundaryRedFlag.ToString();
             }
             else if (LineColor == 2) // зеленая линия
             {
@@ -729,15 +738,78 @@ public class ARSceneMakingManager : MonoBehaviour
     }
     void DeleteObject()
     {
+        String substring = "";
         // Если нажали кнопку "удалить последний созданный объект"
         if (Input.GetKeyDown(KeyCode.JoystickButton3))
         {
-            Destroy(InstObj);
+            try
+            {
+                // пробую выделить из названия объекта "BoundaryRadarogram_N"
+                if (InstObj.name.Substring(0,12) == "BoundaryFind")
+                    substring = InstObj.name.Substring(0,17); // для "BoundaryFindObj_2"
+                if (InstObj.name.Substring(0,13) == "BoundaryRadar")
+                    substring = InstObj.name.Substring(0,20); // для "BoundaryRadarogram_2"
+
+                // это работает так:
+                /*
+                    String value = "BoundaryRadarogram_1_13";
+                    int startIndex = 0;
+                    int length = 20;
+                    String substring = value.Substring(startIndex, length);
+                    Console.WriteLine(substring); // BoundaryRadarogram_1
+                */
+
+            }
+            catch
+            {
+                // ошибка из-за того что имя короче чем "BoundaryRadarogram"
+            }
+
+            // ниже два if для белого флага
+            if (InstObj.name == "BoundaryRadarogram1") // если объект, который пытаются удалить - первая граница профиля - значит нужно декрементировать номер профиля и счетчик Flag_white_num
+            {
+                Destroy(InstObj); // удаляем флаг
+                numObjectBoundaryRadarogramFlag--; // декрементируем, чтобы при установке следующего, номер не перепрыгнул
+                Flag_white_num--; // чтобы вновь созданный флаг опять был "BoundaryRadarogram1"
+                AddParallelNum--; // сквозная нумерация для определения четности/нечетности
+            }
+            else if(substring == "BoundaryRadarogram_2") // если объект, который пытаются удалить - вторая граница профиля - нужно удалить объект и последнюю созданную линию,
+            {                                            // затем переименовать флаг налача профиля и откатить нумерацию, чтобы можно было поставить второй флаг и линия заново создалась
+                Destroy(InstObj); // удаляем флаг
+                Destroy(newWLine); // удаляем последнюю созданную линию
+
+                //TextLog.text = "ищу " + "BoundaryRadarogram_1" + InstObj.name.Substring(20);
+                GameObject StartProfile = GameObject.Find("BoundaryRadarogram_1" + InstObj.name.Substring(20)); // ищем флаг - начало данного профиля
+                StartProfile.name = "BoundaryRadarogram1";
+                Flag_white_num++; // повысил счетчик, чтобы показать что первый флаг уже создан и новый флаг был сразу вторым
+                //numObjectBoundaryRadarogramFlag++;
+                AddParallelNum--; // сквозная нумерация для определения четности/нечетности
+            }
+
+            // ниже два if для красного флага
+            else if((InstObj.name == "BoundaryFindObj1") && (InstObj.tag == "Important_flag")) // доп условие, чтобы не удалялись флаги на зелёных линиях
+            {
+                Destroy(InstObj); // удаляем флаг
+                numObjectBoundaryRedFlag--; // декрементируем, чтобы при установке следующего, номер не перепрыгнул
+                Flag_white_num--; // чтобы вновь созданный флаг опять был "BoundaryFindObj1"
+            }
+            else if(substring == "BoundaryFindObj_2")
+            {
+                Destroy(InstObj); // удаляем флаг
+                Destroy(newRLine); // удаляем последнюю созданную красную линию
+                numObjectBoundaryRedFlag--; // декрементируем, чтобы при установке следующего, номер не перепрыгнул
+
+                //TextLog.text = "ищу " + "BoundaryFindObj_1" + InstObj.name.Substring(17);
+                GameObject StartProfile = GameObject.Find("BoundaryFindObj_1" + InstObj.name.Substring(17)); // ищем флаг - начало данного профиля
+                StartProfile.name = "BoundaryFindObj1";
+                Flag_white_num++; // повысил счетчик, чтобы показать что первый флаг уже создан и новый флаг был сразу вторым
+            }
+
         }
         // Если была нажата кнопка Delete в AR-меню
         if (checkDeleteObj)
         {
-            if ((hit.collider.gameObject.name != "BasePlanePrefab") && (hit.collider.gameObject.name != "DeleteButtonCube"))
+            if ((hit.collider.gameObject.name != "BasePlanePrefab") && (hit.collider.gameObject.name != "DeleteButtonCube") && (hit.collider.gameObject.tag != "Important_flag"))
             {
                 //TextLog.text = hit.collider.gameObject.name;
                 DeleteObjPrefab.transform.position = hit.collider.gameObject.transform.position;

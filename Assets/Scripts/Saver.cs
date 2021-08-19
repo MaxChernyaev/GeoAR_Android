@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Collections;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -48,7 +49,7 @@ public class Saver : MonoBehaviour
     {
         if(File.Exists(PathToJson))
         {
-            TextLog.text = "Файл найден, загружаю сцену...";
+            StartCoroutine("TextLog_LoadScene");
             using (FileStream fileStream = File.Open(PathToJson, FileMode.Open, FileAccess.Read))
             using (StreamReader reader = new StreamReader(fileStream))
             {
@@ -82,7 +83,7 @@ public class Saver : MonoBehaviour
             }
         }
 
-        TextLog.text = "Сохраняю данные в файл...";
+        StartCoroutine("TextLog_SaveScene");
         using (FileStream fileStream = File.Open(PathToJson, FileMode.OpenOrCreate, FileAccess.Write))
         {
             fileStream.SetLength(0);
@@ -127,5 +128,26 @@ public class Saver : MonoBehaviour
             }
         }
 
+    }
+    
+    IEnumerator TextLog_SaveScene()
+    {
+        TextLog.text = "Сохраняю данные в файл.";
+        yield return new WaitForSeconds(0.5f);
+        TextLog.text = "Сохраняю данные в файл..";
+        yield return new WaitForSeconds(0.5f);
+        TextLog.text = "Сохраняю данные в файл...";
+        yield return new WaitForSeconds(2f);
+        TextLog.text = "";
+    }
+    IEnumerator TextLog_LoadScene()
+    {
+        TextLog.text = "Файл найден, загружаю сцену.";
+        yield return new WaitForSeconds(0.5f);
+        TextLog.text = "Файл найден, загружаю сцену..";
+        yield return new WaitForSeconds(0.5f);
+        TextLog.text = "Файл найден, загружаю сцену...";
+        yield return new WaitForSeconds(2f);
+        TextLog.text = "";
     }
 }
