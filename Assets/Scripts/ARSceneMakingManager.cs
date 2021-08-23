@@ -68,10 +68,12 @@ public class ARSceneMakingManager : MonoBehaviour
     private bool checkDeleteObj = false;
     private RaycastHit hit;
     private int LineColor; // цвет линии между красными флагами: 1-красная, 2-зеленая
-    [SerializeField] private GameObject StripedLine;
+    private GameObject StripedLine;
     private GameObject InstObj; // последний установленный объект
     private GameObject newWLine; // последняя созданная белая линия
     private GameObject newRLine; // последняя созданная красная линия
+    [SerializeField] private Text distance_to_marker;
+    [SerializeField] private GameObject SmartPhone;
 
     void Start()
     {   
@@ -92,6 +94,7 @@ public class ARSceneMakingManager : MonoBehaviour
         ARPlanePrefab.GetComponent<ARPlaneMeshVisualizer>().enabled = false;
         ARPlanePrefab.GetComponent<MeshRenderer>().enabled = false;
         DeleteObjPrefab.SetActive(false);
+        distance_to_marker.enabled = false; // отключаю отображение расстояния до маркера, пока не будет создана плоскость
     } 
 
     void Update()
@@ -104,6 +107,7 @@ public class ARSceneMakingManager : MonoBehaviour
         //OnGUI();
         SpawnRadarogram();
         DeleteObject();
+        DistanceToMarker();
     }
 
     public void CatDownload()
@@ -143,6 +147,7 @@ public class ARSceneMakingManager : MonoBehaviour
                 //     intcheck++;
                 // }
                 inscriptionTable.SetActive(false);
+                distance_to_marker.enabled = true;
                 planeManager.enabled = true;
                 // if(timeTracking < 300)
                 // {
@@ -843,6 +848,22 @@ public class ARSceneMakingManager : MonoBehaviour
         lineRenderer.SetPosition(0, FindObject.transform.position);
         FindObject = GameObject.Find(obj2);
         lineRenderer.SetPosition(1, FindObject.transform.position);
+    }
+
+    private void DistanceToMarker()
+    {
+        // Измерение расстояния между двумя объектами
+        Vector3 FirstPosition = SmartPhone.transform.position; // позиция телефона
+        FirstPosition.y = 0; // обнуляю координату по высоте, чтобы не учитывать рост человека
+        Vector3 SecondPosition = PlaneMarkerPrefab.transform.position; // позиция маркера
+        SecondPosition.y = 0; // обнуляю по высоте координату маркета, потому что она почему-то не 0, а -0.9, хотя видно что маркер лежит в плоскости пола
+        // TextLog.text = "|";
+        // TextLog.text += FirstPosition.ToString();
+        // TextLog.text += "|";
+        // TextLog.text += SecondPosition.ToString();
+        Vector3 DirectionVector = SecondPosition - FirstPosition;
+        float MyMagnitude = DirectionVector.magnitude;
+        distance_to_marker.text = MyMagnitude.ToString("0.00") + " м";
     }
 
     // выводит какие команды посылает VR контроллер
