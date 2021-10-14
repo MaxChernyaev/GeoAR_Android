@@ -251,6 +251,8 @@ public class ARSceneMakingManager : MonoBehaviour
                         if (Input.GetKeyDown(KeyCode.LeftShift))
                         {
                             GameObject.Find("scripts").GetComponent<ObjectManager>().SaveButton();
+                            ARMenuScript.ARMenuPlanePrefab.gameObject.SetActive(false); // закрываю меню
+                            ARMenuScript.checkMenuActive = false; // говорю скрипту ARMenu что закрыл меню
                             // FindButton.GetComponent<Renderer>().material.color = Color.blue;
                         }
                         break;
@@ -269,10 +271,12 @@ public class ARSceneMakingManager : MonoBehaviour
                         if (Input.GetKeyDown(KeyCode.LeftShift))
                         {
                             GameObject.Find("scripts").GetComponent<ObjectManager>().LoadButton();
+                            ARMenuScript.ARMenuPlanePrefab.gameObject.SetActive(false); // закрываю меню
+                            ARMenuScript.checkMenuActive = false; // говорю скрипту ARMenu что закрыл меню
                             // FindButton.GetComponent<Renderer>().material.color = Color.blue;
                         }
                         break;
-                    case "SendButtonCube":
+                    case "SendButtonCube": // изначально эта кнопка - отправка по сокету. Теперь выполняет роль установки радарограмм из архива
                         LastFindButton = FindButton;
                         FindButton = GameObject.Find(ObjName);
                         checkDeleteObj = false;
@@ -286,7 +290,10 @@ public class ARSceneMakingManager : MonoBehaviour
                         }
                         if (Input.GetKeyDown(KeyCode.LeftShift))
                         {
-                            GameObject.Find("scripts").GetComponent<Saver>().SendSaveJSON();
+                            GameObject.Find("scripts").GetComponent<InstallRadarogramsOnTheARScene>().InstallRadarogramButton(); // запускаем установку радарограмм из файла
+                            ARMenuScript.ARMenuPlanePrefab.gameObject.SetActive(false); // закрываю меню
+                            ARMenuScript.checkMenuActive = false; // говорю скрипту ARMenu что закрыл меню
+                            // GameObject.Find("scripts").GetComponent<Saver>().SendSaveJSON(); // в случае отправки по сокету
                             // FindButton.GetComponent<Renderer>().material.color = Color.blue;
                         }
                         break;
@@ -306,8 +313,8 @@ public class ARSceneMakingManager : MonoBehaviour
                         {
                             //Destroy(InstObj);
                             checkDeleteObj = true;
-                            ARMenuScript.ARMenuPlanePrefab.gameObject.SetActive(false);
-                            ARMenuScript.checkMenuActive = false;
+                            ARMenuScript.ARMenuPlanePrefab.gameObject.SetActive(false); // закрываю меню
+                            ARMenuScript.checkMenuActive = false; // говорю скрипту ARMenu что закрыл меню
                         }
                         break;
                     case "PillarButtonCube":
@@ -529,6 +536,8 @@ public class ARSceneMakingManager : MonoBehaviour
                             {
                                 FindButton.GetComponent<Renderer>().material.color = Color.blue;
                             }
+                            ARMenuScript.ARMenuPlanePrefab.gameObject.SetActive(false); // закрываю меню
+                            ARMenuScript.checkMenuActive = false; // говорю скрипту ARMenu что закрыл меню
                         }
                         break;
                     // default:

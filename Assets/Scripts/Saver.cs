@@ -96,7 +96,7 @@ public class Saver : MonoBehaviour
     }
 
     /// <summary>
-    /// Оправить данные сцены по сокету.
+    /// Оправить данные сцены по сокету. (в данный момент никак не используется)
     /// </summary>
     public void SendSaveJSON()
     {
