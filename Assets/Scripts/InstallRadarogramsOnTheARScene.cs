@@ -23,8 +23,12 @@ public class InstallRadarogramsOnTheARScene : MonoBehaviour
     private bool BlanksSet = false; // чтобы при выборе другого архива с радарограммами, менялись картинки на старых заготовках, а не распознавались новые
     private JsonRadarogramReader.CommonData myJsonRadarogramData;
     string zipPath; // сюда нужно передать путь до архива из файлового менеджера
-    string extractPath = Application.persistentDataPath + "/extractZIP"; // куда будем распаковывать архивы
+    string extractPath; // куда будем распаковывать архивы
 
+    private void Awake()
+    {
+        extractPath = Application.persistentDataPath + "/extractZIP"; // куда будем распаковывать архивы
+    }
 
     // Сбор основных объектов сцены
     private void FindWhiteFlag()
